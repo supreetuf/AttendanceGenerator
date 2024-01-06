@@ -1,1 +1,2 @@
 # AttendanceGenerator
+## Just for fun :)
