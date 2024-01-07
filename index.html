@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,14 +10,11 @@
             width: 100%;
         }
 
-        table,
-        th,
-        td {
+        table, th, td {
             border: 1px solid black;
         }
 
-        th,
-        td {
+        th, td {
             padding: 10px;
             text-align: center;
         }
@@ -27,20 +23,21 @@
             background-color: #f2f2f2;
         }
 
-        input,
-        button,
-        select {
+        input, button, select {
             margin-bottom: 10px;
         }
     </style>
 </head>
-
 <body>
 
     <h2>Attendance Table Generator</h2>
 
     <label for="absentDays">Absent Days:</label>
     <input type="number" id="absentDays" step="0.5" placeholder="Enter absent days">
+
+
+    <label for="restDays">Rest Days:</label>
+    <input type="number" id="restDays" step="0.5" placeholder="Enter rest days">
 
     <label for="month">Month:</label>
     <select id="month">
@@ -71,10 +68,11 @@
     <script>
         function generateTable() {
             const absentDays = parseFloat(document.getElementById("absentDays").value);
+            const restDays = parseFloat(document.getElementById("restDays").value);
             const selectedMonth = parseInt(document.getElementById("month").value);
             const selectedYear = document.getElementById("year").value;
 
-            if (isNaN(absentDays) || absentDays < 0 || isNaN(selectedMonth) || selectedMonth < 1 || selectedMonth > 12 || isNaN(selectedYear) || selectedYear.length !== 4) {
+            if (isNaN(absentDays) || absentDays < 0 || isNaN(restDays) || restDays < 0 || isNaN(selectedMonth) || selectedMonth < 1 || selectedMonth > 12 || isNaN(selectedYear) || selectedYear.length !== 4) {
                 alert("Please enter valid values for absent days, month, and year.");
                 return;
             }
@@ -83,26 +81,30 @@
             table.innerHTML = ""; // Clear previous table content
 
             const row = document.createElement("tr");
-
+            
             let totalAbsentDays = 0;
+            let totalRestDays = 0;
 
             for (let day = 1; day <= new Date(selectedYear, selectedMonth, 0).getDate(); day++) {
                 const isThursday = new Date(selectedYear, selectedMonth - 1, day).getDay() === 4;
 
-                let absentDay;
-                if (!isThursday) {
-                    if (totalAbsentDays < absentDays) {
-                        absentDay = Math.random() < (absentDays - totalAbsentDays) / (new Date(selectedYear, selectedMonth, 0).getDate() / 2) ? 'A' : 'P';
-                        totalAbsentDays += absentDay === 'A' ? 1 : 0;
-                    } else {
-                        absentDay = 'P';
-                    }
+                let attendanceDay;
+                if (isThursday) {
+                    attendanceDay = 'O'; // Thursday is marked as Holiday
+                } else if (totalAbsentDays < absentDays) {
+                    // Distribute 'A' and 'P' more uniformly for absent days
+                    attendanceDay = Math.random() < (absentDays - totalAbsentDays) / (new Date(selectedYear, selectedMonth, 0).getDate() - day + 1) ? 'A' : 'P';
+                    totalAbsentDays += attendanceDay === 'A' ? 1 : 0;
+                } else if (totalRestDays < restDays) {
+                    // Distribute 'R' and 'P' more uniformly for rest days
+                    attendanceDay = Math.random() < (restDays - totalRestDays) / (new Date(selectedYear, selectedMonth, 0).getDate() - day + 1) ? 'R' : 'P';
+                    totalRestDays += attendanceDay === 'R' ? 1 : 0;
                 } else {
-                    absentDay = 'R'; // Thursday is marked as Holiday
+                    attendanceDay = 'P';
                 }
 
                 const cell = document.createElement("td");
-                cell.textContent = absentDay;
+                cell.textContent = attendanceDay;
                 row.appendChild(cell);
             }
 
@@ -123,5 +125,4 @@
     </script>
 
 </body>
-
 </html>
